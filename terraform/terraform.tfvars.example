@@ -1,0 +1,3 @@
+region        = "cn-hangzhou"
+acr_namespace = "dongzh-demo"   # must be globally unique
+node_count    = 2

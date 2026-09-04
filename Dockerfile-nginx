@@ -1,0 +1,14 @@
+# ---- stage 1: collect / validate static assets ----
+FROM alpine:3.20 AS assets
+WORKDIR /site
+COPY public/ ./
+RUN find . -name '*.map' -delete
+
+# ---- stage 2: runtime ----
+FROM nginx:1.27-alpine
+# The image entrypoint renders /etc/nginx/templates/*.template with envsubst
+# and sources *.envsh files first, so KUBE_DNS is filled in at startup.
+COPY nginx/default.conf /etc/nginx/templates/default.conf.template
+COPY nginx/10-kube-dns.envsh /docker-entrypoint.d/10-kube-dns.envsh
+COPY --from=assets /site /usr/share/nginx/html
+EXPOSE 80

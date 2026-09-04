@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: url-shortener-nginx
+  namespace: url-shortener
+  annotations:
+    # ACK Cloud Controller Manager creates a CLB for this Service
+    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-address-type: "internet"
+    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-instance-charge-type: "PayByCLCU"
+    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-health-check-flag: "on"
+    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-health-check-type: "http"
+    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-health-check-uri: "/healthz"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local   # keep the client IP, only route to nodes with a ready pod
+  selector:
+    app: url-shortener-nginx
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: url-shortener-nginx
+  namespace: url-shortener
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: url-shortener-nginx
+  template:
+    metadata:
+      labels:
+        app: url-shortener-nginx
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: url-shortener-nginx
+      containers:
+        - name: nginx
+          image: registry.cn-hangzhou.aliyuncs.com/CHANGE_ME/url-shortener-nginx:latest
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests: { cpu: 50m, memory: 32Mi }
+            limits:   { cpu: 200m, memory: 64Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 20
