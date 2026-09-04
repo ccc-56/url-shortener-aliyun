@@ -1,0 +1,10 @@
+#!/bin/sh
+# Sourced by the nginx image entrypoint before templates are rendered.
+# KUBE_DNS  -> DNS server for `resolver` (defaults to the Pod's nameserver, i.e. CoreDNS)
+# BACKEND   -> upstream host for /api and /r  (defaults to the app Service FQDN)
+if [ -z "${KUBE_DNS}" ]; then
+  KUBE_DNS=$(awk '/^nameserver/ {print $2; exit}' /etc/resolv.conf)
+  export KUBE_DNS
+fi
+: "${BACKEND:=url-shortener-app.url-shortener.svc.cluster.local}"
+export BACKEND

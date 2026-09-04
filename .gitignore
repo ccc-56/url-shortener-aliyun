@@ -1,0 +1,9 @@
+node_modules
+.env
+
+# terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+terraform/terraform.tfvars
+terraform/kubeconfig

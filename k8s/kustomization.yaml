@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: url-shortener
+resources:
+  - namespace.yaml
+  - redis.yaml
+  - app.yaml
+  - nginx.yaml
+# CI overrides these with the real ACR namespace + git SHA tag:
+#   kustomize edit set image registry.cn-hangzhou.aliyuncs.com/CHANGE_ME/url-shortener-app=<acr>/url-shortener-app:<sha>
+images:
+  - name: registry.cn-hangzhou.aliyuncs.com/CHANGE_ME/url-shortener-app
+    newTag: latest
+  - name: registry.cn-hangzhou.aliyuncs.com/CHANGE_ME/url-shortener-nginx
+    newTag: latest

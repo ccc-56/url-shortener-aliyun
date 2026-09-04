@@ -1,0 +1,7 @@
+node_modules
+.git
+terraform
+k8s
+.github
+*.md
+.env*
